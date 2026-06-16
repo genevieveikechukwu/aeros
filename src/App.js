@@ -552,6 +552,24 @@ const App = () => {
                     borderBottom: "2px solid #ddd",
                   }}
                 >
+                  NH3 (ppm)
+                </th>
+                <th
+                  style={{
+                    padding: "12px",
+                    textAlign: "left",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
+                  VOC (ppm)
+                </th>
+                <th
+                  style={{
+                    padding: "12px",
+                    textAlign: "left",
+                    borderBottom: "2px solid #ddd",
+                  }}
+                >
                   Status
                 </th>
                 <th
@@ -577,6 +595,8 @@ const App = () => {
                       <td style={{ padding: "12px" }}>{item.location}</td>
                       <td style={{ padding: "12px" }}>{item.CO}</td>
                       <td style={{ padding: "12px" }}>{item.CO2}</td>
+                      <td style={{ padding: "12px" }}>{item.NH3 ?? "—"}</td>
+                      <td style={{ padding: "12px" }}>{item.VOC ?? "—"}</td>
                       <td style={{ padding: "12px" }}>
                         <span
                           style={{
