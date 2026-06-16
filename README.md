@@ -1,166 +1,195 @@
-# 🌍 Vehicle Emissions Monitoring Dashboard
+# Indoor Gas Emissions Monitoring Dashboard
 
-A real-time, production-ready dashboard for monitoring vehicle emissions across multiple monitoring stations. Built with React and designed for both technical and non-technical users, this dashboard provides comprehensive air quality tracking with intuitive visualizations and actionable insights.
+A fullstack Next.js dashboard for monitoring indoor gas emissions in real time. The app is designed for enclosed spaces such as laboratories, lecture halls, workshops, studios, and other indoor environments where air quality matters.
 
-![Dashboard Preview](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=white)
-![AWS Amplify](https://img.shields.io/badge/AWS_Amplify-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
-![DynamoDB](https://img.shields.io/badge/DynamoDB-4053D6?style=for-the-badge&logo=amazondynamodb&logoColor=white)
+It tracks multiple pollutants, visualizes trends, stores readings in Firebase Realtime Database, and exposes API routes that ESP32 devices can post to directly.
 
----
+## What It Monitors
 
-## 📋 Table of Contents
+- Carbon Monoxide, `CO`
+- Carbon Dioxide, `CO2`
+- Ammonia, `NH3`
+- Volatile Organic Compounds, `VOC`
+- Alert status values such as `NORMAL`, `SAFETY_WARNING`, and `CRITICAL_DANGER`
 
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
-- [Data Model](#data-model)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Components Breakdown](#components-breakdown)
-- [Environment Variables](#environment-variables)
-- [API Integration](#api-integration)
-- [Styling & Design](#styling--design)
-- [Performance Optimization](#performance-optimization)
-- [Security Considerations](#security-considerations)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+## Key Features
 
----
+- Live indoor air quality dashboard with summary cards
+- Trend charts for `CO`, `CO2`, `NH3`, and `VOC`
+- Status distribution chart for current readings
+- Recent readings table with timestamps and locations
+- Firebase Realtime Database integration
+- Fullstack Next.js API routes for reading and creating data
+- Seed/populate endpoint for inserting sample records quickly
 
-## 🎯 Overview
+## Stack
 
-The Vehicle Emissions Monitoring Dashboard is a sophisticated web application designed to track, visualize, and analyze air quality data from multiple vehicle emission monitoring devices. The dashboard provides real-time insights into Carbon Monoxide (CO) and Carbon Dioxide (CO₂) levels across various locations, helping environmental agencies, city planners, and public health officials make data-driven decisions. [You can find a complete STEP-BY-STEP GUIDE ON THIS PROJECT on my Dev.to blog](https://dev.to/aws-builders/aws-serverless-guide-securing-iot-data-ingestion-with-api-gateway-lambda-and-dynamodb-2hl5)
+- Next.js 15
+- React 19
+- Recharts
+- Firebase Realtime Database
+- Firebase Admin SDK for server-side writes
 
-### Key Objectives
+## Project Flow
 
-- **Real-Time Monitoring:** Automatic data refresh every 30 seconds to ensure up-to-date information
-- **Accessibility:** Non-technical explanations for all metrics and visualizations
-- **Actionable Insights:** Color-coded status indicators and trend forecasting
-- **Responsive Design:** Seamless experience across desktop, tablet, and mobile devices
-- **Data Integrity:** Robust error handling and fallback mechanisms
-
----
-
-## ✨ Features
-
-### 1. **Live Summary Cards**
-Three prominent cards displaying critical real-time metrics:
-
-- **Carbon Monoxide (CO) Level**
-  - Current reading in parts per million (ppm)
-  - Plain-language explanation of air quality impact
-  - Visual status indicator (Green/Yellow/Red)
-  
-- **Carbon Dioxide (CO₂) Level**
-  - Current reading in parts per million (ppm)
-  - Context about atmospheric conditions
-  - Recommendations for ventilation
-  
-- **Overall Emission Status**
-  - Aggregated assessment across all parameters
-  - Color-coded border for quick visual identification
-  - Status categories: Good, Moderate, Alert
-
-### 2. **Interactive Time-Series Charts**
-
-#### CO Trend Over Time
-- Line chart displaying the last 20 readings
-- X-axis: Time (hourly intervals)
-- Y-axis: CO concentration (ppm)
-- Interactive tooltips on hover
-- Smooth animations and transitions
-
-#### CO₂ Trend Over Time
-- Line chart showing CO₂ levels over time
-- Identifies peak traffic hours and patterns
-- Helps correlate emission spikes with events
-
-### 3. **Distribution Visualization**
-
-#### Devices by Emission Status (Pie Chart)
-- Visual breakdown of monitoring device statuses
-- Shows percentage of devices in Good, Moderate, and Alert states
-- Modern color palette with distinct, accessible colors
-- Interactive labels with device counts
-
-### 4. **Predictive Forecasting**
-
-A simple trend analysis module that:
-- Analyzes the last 5 data points
-- Identifies directional trends (UP/DOWN)
-- Calculates rate of change
-- Provides plain-language predictions
-- Offers contextual recommendations based on trends
-
-### 5. **Comprehensive Data Table**
-
-- Displays the 15 most recent readings
-- Columns: Device ID, CO, CO₂, Location, Timestamp, Status
-- Status badges with color coding
-- Sortable and scrollable for easy navigation
-- Responsive design for mobile viewing
-
-### 6. **Auto-Refresh Mechanism**
-
-- Polls data every 30 seconds using `setInterval`
-- Displays "Last Updated" timestamp
-- Graceful error handling with retry logic
-- Loading states during data fetch
-
-### 7. **Non-Technical Explanations**
-
-Every metric includes contextual information:
-- **What the numbers mean** in practical terms
-- **Health implications** for different exposure levels
-- **Recommended actions** based on current readings
-- **Pattern explanations** for trend charts
-
----
-
-## 🛠 Technology Stack
-
-### Frontend
-- **React 18.x** - Core UI framework using functional components and Hooks
-- **Recharts 2.x** - Declarative charting library for data visualization
-- **CSS-in-JS** - Inline styles for component-level styling
-- **Inter Font Family** - Modern, accessible typography
-
-### Backend & Infrastructure
-- **AWS DynamoDB** - NoSQL database for emission readings
-- **AWS Amplify** - Hosting, CI/CD, and deployment pipeline
-- **AWS SDK for JavaScript** - DynamoDB client library
-- **AWS API Gateway** - HTTP API for retrieving and displaying sensor data
-- **AWS Lambda** - Serverless handler for writing sensor DynamoDB
-### Development Tools
-- **Create React App** - Build toolchain and development server
-- **npm/npx** - Package management
-- **Git** - Version control
-- **ESLint** - Code quality and consistency
-
-### Data Flow
-```
-Monitoring Devices → AWS IoT Core → DynamoDB → React App → User Browser
+```text
+ESP32 Device -> POST /api/readings -> Firebase Realtime Database -> Dashboard UI
 ```
 
----
+## API Routes
 
-## 🏗 Architecture
+### `GET /api/readings`
+Returns the stored readings from Firebase Realtime Database.
 
-### High-Level Architecture
+### `POST /api/readings`
+Creates a new reading in the database.
 
+Example payload:
+
+```json
+{
+  "device_id": "24:6F:28:A1:B2:C3",
+  "timestamp": "2026-06-16T17:30:00",
+  "location": "PET Auditorium, FUTO",
+  "CO_ppm": 1.2,
+  "CO2_ppm": 550,
+  "NH3_ppm": 1.5,
+  "VOC_ppm": 0.05,
+  "alert_status": "NORMAL"
+}
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     User's Browser                          │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │           React Single Page Application             │   │
-│  │                                                      │   │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐         │   │
-│  │  │ Summary  │  │  Charts  │  │  Table   │         │   │
-│  │  │  Cards   │  │Component │  │Component │         │   │
-│  │  └──────────┘  └──────────┘  └──────────┘         │   │
-│  │                                
+
+### `POST /api/readings/populate`
+Inserts the sample indoor gas readings used for demo/testing.
+
+Use this endpoint to seed the database before connecting your ESP32:
+
+```text
+https://your-domain.com/api/readings/populate
+```
+
+## Environment Variables
+
+Create a `.env` file in the project root.
+
+```env
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your-project-default-rtdb.firebaseio.com/
+NEXT_PUBLIC_FIREBASE_DATA_PATH=
+NEXT_PUBLIC_USE_MOCK_DATA=false
+
+FIREBASE_DATABASE_URL=https://your-project-default-rtdb.firebaseio.com/
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+Notes:
+
+- `NEXT_PUBLIC_FIREBASE_DATA_PATH` is optional.
+- Leave it empty if your readings live at the database root.
+- Set it to a node path like `readings` or `sensors/indoor` if your data is nested.
+- `FIREBASE_*` values are required for the API routes that write to Firebase.
+
+## Getting Firebase Admin Credentials
+
+Go to Firebase Console:
+
+```text
+Project settings -> Service accounts -> Generate new private key
+```
+
+That downloaded JSON file contains the `project_id`, `client_email`, and `private_key` values needed by the server.
+
+## ESP32 Usage
+
+Point your ESP32 to the create endpoint:
+
+```text
+POST https://your-domain.com/api/readings
+Content-Type: application/json
+```
+
+Send JSON with your sensor values. The API accepts either of these field styles:
+
+- `CO`, `CO2`, `NH3`, `VOC`
+- `CO_ppm`, `CO2_ppm`, `NH3_ppm`, `VOC_ppm`
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+## Production Build
+
+```bash
+npm run build
+npm start
+```
+
+## Project Structure
+
+```text
+pages/
+  api/
+    readings.js
+    readings/
+      populate.js
+  index.js
+  _app.js
+lib/
+  firebaseAdmin.js
+src/
+  App.js
+  services/
+  utils/
+```
+
+## Dashboard Behavior
+
+- The app loads readings from Firebase and renders the latest indoor air quality data.
+- If no `ESP32-001` record exists, the dashboard falls back to all available readings.
+- Charts currently visualize `CO`, `CO2`, `NH3`, and `VOC` trends over time.
+- The table shows the most recent readings with location, status, and time.
+
+## Sample Seed Data
+
+The populate endpoint inserts readings for these indoor environments:
+
+- PET Auditorium, FUTO
+- Mechanical Studio, FUTO
+- Mechatronics Lecture Hall 1, FUTO
+
+These samples are useful for demos and for verifying the dashboard before live hardware data is connected.
+
+## Deployment
+
+Deploy the app as a Next.js project. Make sure your host supports server routes so these endpoints work:
+
+- `/api/readings`
+- `/api/readings/populate`
+
+Also set the Firebase environment variables in your deployment environment, not only in local `.env`.
+
+## Security Notes
+
+- Do not expose Firebase Admin credentials on the client.
+- Keep `.env` out of git.
+- Protect the populate endpoint if you do not want it publicly callable in production.
+
+## Troubleshooting
+
+- If the dashboard is empty, confirm the Realtime Database path in `NEXT_PUBLIC_FIREBASE_DATA_PATH`.
+- If POST requests fail, verify `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`.
+- If the endpoint returns a 500, check the server logs for Firebase Admin initialization errors.
+
+## License
+
+No license has been added yet.
