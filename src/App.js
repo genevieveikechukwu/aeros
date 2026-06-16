@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import {
   LineChart,
@@ -12,7 +14,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { fetchEmissionsData } from "./services/dataService";
+import { subscribeToEmissionsData } from "./services/dataService";
 import { getEmissionStatus, getStatusColor } from "./utils/statusCalculator";
 import { COLORS } from "./utils/constants";
 import styles from "./styles/styles";
@@ -22,75 +24,80 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [error, setError] = useState(null);
-  const [sensorActive, setSensorActive] = useState(true); // NEW: Track sensor status
+  const [sensorActive, setSensorActive] = useState(true);
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  const loadData = async () => {
-    console.log("Starting to load data...");
-    console.log(
-      "REACT_APP_USE_MOCK_DATA:",
-      process.env.REACT_APP_USE_MOCK_DATA
-    );
+  const loadData = () => {
     setLoading(true);
     setError(null);
-    try {
-  const result = await fetchEmissionsData(false); // Explicitly false
-  console.log("Data loaded from API:", result);
-  console.log("First item:", result[0]);
-  
-  // Filter to only show ESP32-001 data
-  const filteredData = result.filter(item => item.device_id === "ESP32-001");
-  console.log(`Filtered to ESP32-001: ${filteredData.length} readings out of ${result.length} total`);
-  
-  setData(filteredData);
-  setLastUpdate(new Date());
 
-  // NEW: Check if sensors are actively transmitting (data within last 5 minutes)
-  if (filteredData.length > 0) {
-    const latestTimestamp = new Date(filteredData[filteredData.length - 1].timestamp);
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const isActive = latestTimestamp > fiveMinutesAgo;
-    setSensorActive(isActive);
+    const unsubscribe = subscribeToEmissionsData(
+      (result) => {
+        const preferredData = result.filter(
+          (item) => item.device_id === "ESP32-001",
+        );
+        const filteredData = preferredData.length > 0 ? preferredData : result;
 
-    if (!isActive) {
-      const minutesSince = Math.floor(
-        (Date.now() - latestTimestamp) / 60000
-      );
-      console.warn(
-        `⚠️ Sensors inactive. Last reading was ${minutesSince} minutes ago`
-      );
-    }
-  } else {
-    setSensorActive(false);
-    console.warn("⚠️ No sensor data available for ESP32-001");
-  }
+        setData(filteredData);
 
-  const sortedResult = filteredData;
-  if (true) {
-    const latestReading = sortedResult[sortedResult.length - 1];
+        if (filteredData.length > 0) {
+          const latestTimestamp = new Date(
+            filteredData[filteredData.length - 1].timestamp,
+          );
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+          const isActive = latestTimestamp > fiveMinutesAgo;
+          setSensorActive(isActive);
 
-    if (latestReading && latestReading.timestamp) {
-      const sensorTime = new Date(latestReading.timestamp);
-      const browserTime = new Date();
-      const delayInSeconds =
-        (browserTime.getTime() - sensorTime.getTime()) / 1000;
+          if (!isActive) {
+            const minutesSince = Math.floor(
+              (Date.now() - latestTimestamp) / 60000,
+            );
+            console.warn(
+              `Sensors inactive. Last reading was ${minutesSince} minutes ago`,
+            );
+          }
 
-      console.log(`End-to-end delay: ${delayInSeconds.toFixed(2)} seconds`);
-    }
-  }
-} catch (err) {
-  console.error("Error fetching data:", err);
-  setError("Failed to load emissions data. Please try again.");
-  setSensorActive(false);
-} finally {
-      setLoading(false);
-    }
+          const sensorTime = new Date(
+            filteredData[filteredData.length - 1].timestamp,
+          );
+          const browserTime = new Date();
+          const delayInSeconds =
+            (browserTime.getTime() - sensorTime.getTime()) / 1000;
+
+          console.log(`End-to-end delay: ${delayInSeconds.toFixed(2)} seconds`);
+          setLastUpdate(new Date());
+        } else {
+          setSensorActive(false);
+          setLastUpdate(null);
+          console.warn("No sensor data available for ESP32-001");
+        }
+
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error loading data:", err);
+        setError("Failed to load emissions data. Please try again.");
+        setSensorActive(false);
+        setLoading(false);
+      },
+    );
+
+    return unsubscribe;
   };
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    const unsubscribe = loadData();
+
+    return () => {
+      if (typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
+  }, [refreshToken]);
+
+  const handleRetry = () => {
+    setRefreshToken((value) => value + 1);
+  };
 
   if (loading && data.length === 0) {
     return (
@@ -108,7 +115,7 @@ const App = () => {
     return (
       <div style={styles.loadingContainer}>
         <p style={styles.errorText}>{error}</p>
-        <button onClick={loadData} style={styles.retryButton}>
+        <button onClick={handleRetry} style={styles.retryButton}>
           Retry
         </button>
       </div>
@@ -117,18 +124,41 @@ const App = () => {
 
   // Calculate metrics from last 10 readings only
   const recentReadings = data.slice(-10);
-  const latestReading = data[data.length - 1] || {};
-  const overallStatus = getEmissionStatus(latestReading.CO, latestReading.CO2);
-  const avgCO = (
-    recentReadings.reduce((sum, d) => sum + d.CO, 0) / recentReadings.length
-  ).toFixed(1);
-  const avgCO2 = (
-    recentReadings.reduce((sum, d) => sum + d.CO2, 0) / recentReadings.length
-  ).toFixed(1);
+  const latestReading = data[data.length - 1] || null;
+  const overallStatus = latestReading
+    ? getEmissionStatus(latestReading.CO, latestReading.CO2)
+    : "No Data";
+  const avgCO = recentReadings.length
+    ? (
+        recentReadings.reduce((sum, reading) => sum + reading.CO, 0) /
+        recentReadings.length
+      ).toFixed(1)
+    : "—";
+  const avgCO2 = recentReadings.length
+    ? (
+        recentReadings.reduce((sum, reading) => sum + reading.CO2, 0) /
+        recentReadings.length
+      ).toFixed(1)
+    : "—";
+  const avgNH3 = recentReadings.length
+    ? (
+        recentReadings.reduce(
+          (sum, reading) => sum + (Number(reading.NH3) || 0),
+          0,
+        ) / recentReadings.length
+      ).toFixed(2)
+    : "—";
+  const avgVOC = recentReadings.length
+    ? (
+        recentReadings.reduce(
+          (sum, reading) => sum + (Number(reading.VOC) || 0),
+          0,
+        ) / recentReadings.length
+      ).toFixed(2)
+    : "—";
 
   // Count unique devices
   const uniqueDevices = new Set(data.map((item) => item.device_id)).size;
- 
 
   // Status distribution
   const statusCounts = data.reduce((acc, item) => {
@@ -147,6 +177,9 @@ const App = () => {
     Moderate: COLORS.statusModerate,
     Alert: COLORS.statusAlert,
   };
+
+  const overallStatusColor =
+    overallStatus === "No Data" ? "#666666" : getStatusColor(overallStatus);
 
   return (
     <div
@@ -177,7 +210,7 @@ const App = () => {
         >
           <div>
             <h1 style={{ margin: 0, color: COLORS.primary }}>
-              🌍 Real-Time Vehicle Emissions Dashboard
+              🌍 Real-Time Gas Emissions Dashboard
             </h1>
             <p style={{ margin: "10px 0 0 0", color: "#666" }}>
               Last Updated: {lastUpdate?.toLocaleTimeString() || "Loading..."}
@@ -231,7 +264,7 @@ const App = () => {
               fontSize: "32px",
               fontWeight: "bold",
               margin: 0,
-              color: getStatusColor(overallStatus),
+              color: overallStatusColor,
             }}
           >
             {overallStatus}
@@ -308,7 +341,7 @@ const App = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
           gap: "20px",
           marginBottom: "20px",
         }}
@@ -384,6 +417,80 @@ const App = () => {
               </Pie>
               <Tooltip />
             </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* NH3 Line Chart */}
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h3 style={{ margin: "0 0 20px 0" }}>
+            NH3 Trend (Avg: {avgNH3} ppm)
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(time) =>
+                  new Date(time).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                }
+              />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="NH3"
+                stroke="#9C27B0"
+                name="NH3 (ppm)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* VOC Line Chart */}
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          <h3 style={{ margin: "0 0 20px 0" }}>
+            VOC Trend (Avg: {avgVOC} ppm)
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(time) =>
+                  new Date(time).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                }
+              />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="VOC"
+                stroke="#FF9800"
+                name="VOC (ppm)"
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
