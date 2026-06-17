@@ -27,6 +27,9 @@ const App = () => {
   const [sensorActive, setSensorActive] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
 
+  // NEW: State to track if the manual population request is in progress
+  const [isPopulating, setIsPopulating] = useState(false);
+
   const loadData = () => {
     setLoading(true);
     setError(null);
@@ -97,6 +100,32 @@ const App = () => {
 
   const handleRetry = () => {
     setRefreshToken((value) => value + 1);
+  };
+
+  // NEW: Function to handle the badge click and call the endpoint
+  const handlePopulateData = async () => {
+    if (isPopulating) return; // Prevent double clicks
+
+    setIsPopulating(true);
+    try {
+      const response = await fetch("/api/readings/populate", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      console.log("Successfully triggered manual data generation.");
+      // No need to manually refresh the UI; the Firebase subscription handles the update!
+    } catch (err) {
+      console.error("Failed to populate data:", err);
+      alert(
+        "Failed to manually populate sensor data. Check console for details.",
+      );
+    } finally {
+      setIsPopulating(false);
+    }
   };
 
   if (loading && data.length === 0) {
@@ -220,25 +249,41 @@ const App = () => {
             </p>
           </div>
 
-          {/* NEW: Sensor Status Badge */}
+          {/* UPDATED: Clickable Sensor Status Badge */}
           <div
             className="dashboard-sensor-badge"
+            onClick={handlePopulateData}
+            title="Click to manually trigger a sensor reading"
             style={{
               padding: "10px",
-
               backgroundColor: sensorActive ? "#E8F5E9" : "#FFF3E0",
               color: sensorActive ? "#2E7D32" : "#E65100",
               fontWeight: "bold",
               display: "flex",
               width: "fit-content",
               alignItems: "center",
-              gap: "2px",
+              gap: "5px",
               alignContent: "center",
+              cursor: isPopulating ? "wait" : "pointer", // Gives interactive feedback
+              opacity: isPopulating ? 0.7 : 1, // Dims while fetching
+              transition: "opacity 0.2s ease, transform 0.1s ease",
+              borderRadius: "4px",
+              userSelect: "none",
             }}
+            // Added a tiny scale effect to make it feel like a button
+            onMouseDown={(e) =>
+              (e.currentTarget.style.transform = "scale(0.95)")
+            }
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <span>{sensorActive ? "🟢" : "🟡"}</span>
+            <span>{isPopulating ? "⏳" : sensorActive ? "🟢" : "🟡"}</span>
             <span style={{ fontSize: "12px" }}>
-              {sensorActive ? "Sensors Active" : "Sensors Inactive"}
+              {isPopulating
+                ? "Triggering..."
+                : sensorActive
+                  ? "Sensors Active"
+                  : "Sensors Inactive"}
             </span>
           </div>
         </div>
@@ -342,7 +387,7 @@ const App = () => {
               color: COLORS.primary,
             }}
           >
-            {uniqueDevices} {/* ← NOW CORRECT */}
+            {uniqueDevices}
           </p>
         </div>
       </div>
