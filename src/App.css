@@ -44,21 +44,23 @@ body,
 .dashboard-table-scroll {
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dashboard-table {
   width: 100% !important;
   max-width: 100%;
-  min-width: 0 !important;
-  table-layout: fixed;
+  min-width: 760px !important;
+  table-layout: auto;
 }
 
 .dashboard-table th,
 .dashboard-table td {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .dashboard-table th:nth-child(1),
@@ -162,10 +164,18 @@ body,
     min-width: 0;
   }
 
+  .dashboard-table-card {
+    margin-top: 20px;
+  }
+
   .dashboard-table th,
   .dashboard-table td {
     padding: 1.5% !important;
     font-size: 0.875rem;
+  }
+
+  .dashboard-table {
+    min-width: 680px !important;
   }
 }
 
@@ -180,6 +190,7 @@ body,
   .dashboard-table-card {
     padding: 3% !important;
     border-radius: 6px;
+    margin-top: 18px;
   }
 
   .dashboard-header h1 {
@@ -209,5 +220,9 @@ body,
   .dashboard-table td {
     font-size: 0.8rem;
     padding: 1.5% !important;
+  }
+
+  .dashboard-table {
+    min-width: 620px !important;
   }
 }

@@ -510,6 +510,13 @@ const App = () => {
         </div>
       </div>
 
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+
       {/* Data Table */}
       <div
         className="dashboard-table-card"
@@ -612,10 +619,18 @@ const App = () => {
                     <tr key={index} style={{ borderBottom: "1px solid #eee" }}>
                       <td style={{ padding: "12px" }}>{item.device_id}</td>
                       <td style={{ padding: "12px" }}>{item.location}</td>
-                      <td style={{ padding: "12px" }}>{item.CO}</td>
-                      <td style={{ padding: "12px" }}>{item.CO2}</td>
-                      <td style={{ padding: "12px" }}>{item.NH3 ?? "—"}</td>
-                      <td style={{ padding: "12px" }}>{item.VOC ?? "—"}</td>
+                      <td style={{ padding: "12px" }}>
+                        {Number(item.CO).toFixed(2)}
+                      </td>
+                      <td style={{ padding: "12px" }}>
+                        {Number(item.CO2).toFixed(2)}
+                      </td>
+                      <td style={{ padding: "12px" }}>
+                        {Number(item.NH3 ?? 0).toFixed(2)}
+                      </td>
+                      <td style={{ padding: "12px" }}>
+                        {Number(item.VOC ?? 0).toFixed(2)}
+                      </td>
                       <td style={{ padding: "12px" }}>
                         <span
                           style={{
