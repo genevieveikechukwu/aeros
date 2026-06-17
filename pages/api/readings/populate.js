@@ -1,97 +1,56 @@
 import { getAdminDatabase } from "../../../lib/firebaseAdmin";
 import { normalizeReading } from "../../../src/utils/readings";
 
-const seedReadings = [
-  {
-    device_id: "24:6F:28:A1:B2:C3",
-    timestamp: "2026-06-16T17:30:00",
-    location: "PET Auditorium, FUTO",
-    CO_ppm: 1.2,
-    CO2_ppm: 550.0,
-    NH3_ppm: 1.5,
-    VOC_ppm: 0.05,
-    alert_status: "NORMAL",
-  },
-  {
-    device_id: "8C:AA:B5:77:90:1F",
-    timestamp: "2026-06-16T17:30:15",
-    location: "Mechanical Studio, FUTO",
-    CO_ppm: 12.5,
-    CO2_ppm: 700.0,
-    NH3_ppm: 4.0,
-    VOC_ppm: 0.8,
-    alert_status: "SAFETY_WARNING",
-  },
-  {
-    device_id: "8C:AA:B5:77:90:1F",
-    timestamp: "2026-06-16T17:35:15",
-    location: "Mechanical Studio, FUTO",
-    CO_ppm: 45.0,
-    CO2_ppm: 850.5,
-    NH3_ppm: 6.5,
-    VOC_ppm: 2.2,
-    alert_status: "CRITICAL_DANGER",
-  },
-  {
-    device_id: "3A:1B:4C:9D:E2:F5",
-    timestamp: "2026-06-16T17:30:30",
-    location: "Mechatronics Lecture hall 1, FUTO",
-    CO_ppm: 2.0,
-    CO2_ppm: 1250.0,
-    NH3_ppm: 3.0,
-    VOC_ppm: 0.1,
-    alert_status: "SAFETY_WARNING",
-  },
-];
+const generateRandomReading = () => {
+  const CO = parseFloat((Math.random() * 50).toFixed(1));
+  const CO2 = parseFloat((Math.random() * 1000 + 400).toFixed(1));
+  const NH3 = parseFloat((Math.random() * 10).toFixed(1));
+  const VOC = parseFloat((Math.random() * 5).toFixed(2));
 
-const setCorsHeaders = (res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-};
+  let alertStatus = "NORMAL";
+  if (CO > 35 || CO2 > 1200 || NH3 > 6) {
+    alertStatus = "CRITICAL_DANGER";
+  } else if (CO > 9 || CO2 > 800 || NH3 > 3) {
+    alertStatus = "SAFETY_WARNING";
+  }
 
-const getDataPath = () => process.env.FIREBASE_DATA_PATH?.trim() || "";
-
-const getReadingsRef = () => {
-  const database = getAdminDatabase();
-  const dataPath = getDataPath();
-  return dataPath ? database.ref(dataPath) : database.ref();
+  return {
+    device_id: "44:1B:F6:D6:30:90",
+    timestamp: new Date().toISOString(),
+    location: "COOU engineering Auditorium",
+    CO_ppm: CO,
+    CO2_ppm: CO2,
+    NH3_ppm: NH3,
+    VOC_ppm: VOC,
+    alert_status: alertStatus,
+  };
 };
 
 export default async function handler(req, res) {
-  setCorsHeaders(res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
-
-  if (req.method !== "POST") {
-    res.setHeader("Allow", ["POST", "OPTIONS"]);
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  // Optional: Secure your cron route so only Vercel can trigger it
 
   try {
-    const normalized = seedReadings
-      .map((reading) => normalizeReading(reading, reading.device_id))
-      .filter(Boolean);
+    const database = getAdminDatabase();
+    const dataPath = process.env.FIREBASE_DATA_PATH?.trim() || "";
+    const readingsRef = dataPath ? database.ref(dataPath) : database.ref();
 
-    const createdRefs = await Promise.all(
-      normalized.map(async (reading) => {
-        const createdRef = getReadingsRef().push();
-        await createdRef.set(reading);
-        return createdRef;
-      }),
-    );
+    const rawReading = generateRandomReading();
+    const normalized = normalizeReading(rawReading, rawReading.device_id);
 
-    return res.status(201).json({
-      inserted: createdRefs.length,
-      ids: createdRefs.map((entry) => entry.key),
-      readings: normalized,
+    if (!normalized) {
+      return res.status(400).json({ error: "Normalization failed" });
+    }
+
+    const createdRef = readingsRef.push();
+    await createdRef.set(normalized);
+
+    return res.status(200).json({
+      success: true,
+      insertedId: createdRef.key,
+      reading: normalized,
     });
   } catch (error) {
-    console.error("/api/readings/populate failed:", error);
-    return res.status(500).json({
-      error: error instanceof Error ? error.message : "Internal server error",
-    });
+    console.error("Cron failed:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
