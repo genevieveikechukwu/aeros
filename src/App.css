@@ -1,38 +1,102 @@
-.App {
-  text-align: center;
+.dashboard-shell {
+  width: 100%;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.dashboard-summary-grid,
+.dashboard-charts-grid {
+  width: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.dashboard-table {
+  min-width: 760px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-charts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 768px) {
+  .dashboard-shell {
+    padding: 12px !important;
   }
-  to {
-    transform: rotate(360deg);
+
+  .dashboard-header,
+  .dashboard-summary-card,
+  .dashboard-chart-card,
+  .dashboard-table-card {
+    padding: 14px !important;
+  }
+
+  .dashboard-header-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .dashboard-sensor-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-chart-card h3,
+  .dashboard-table-card h3 {
+    margin-bottom: 12px !important;
+    font-size: 1rem;
+  }
+
+  .dashboard-chart-card {
+    min-width: 0;
+  }
+
+  .dashboard-table {
+    min-width: 680px;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 10px !important;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-shell {
+    padding: 10px !important;
+  }
+
+  .dashboard-header,
+  .dashboard-summary-card,
+  .dashboard-chart-card,
+  .dashboard-table-card {
+    padding: 12px !important;
+    border-radius: 6px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.15rem;
+  }
+
+  .dashboard-summary-card p {
+    font-size: 24px !important;
+  }
+
+  .dashboard-table {
+    min-width: 620px;
   }
 }

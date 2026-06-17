@@ -183,6 +183,7 @@ const App = () => {
 
   return (
     <div
+      className="dashboard-shell"
       style={{
         backgroundColor: COLORS.background,
         minHeight: "100vh",
@@ -191,6 +192,7 @@ const App = () => {
     >
       {/* Header - UPDATED with sensor status */}
       <div
+        className="dashboard-header"
         style={{
           backgroundColor: "white",
           padding: "20px",
@@ -200,6 +202,7 @@ const App = () => {
         }}
       >
         <div
+          className="dashboard-header-content"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -219,6 +222,7 @@ const App = () => {
 
           {/* NEW: Sensor Status Badge */}
           <div
+            className="dashboard-sensor-badge"
             style={{
               padding: "10px 20px",
               borderRadius: "20px",
@@ -241,6 +245,7 @@ const App = () => {
 
       {/* Summary Cards */}
       <div
+        className="dashboard-summary-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
@@ -249,6 +254,7 @@ const App = () => {
         }}
       >
         <div
+          className="dashboard-summary-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -272,6 +278,7 @@ const App = () => {
         </div>
 
         <div
+          className="dashboard-summary-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -293,6 +300,7 @@ const App = () => {
         </div>
 
         <div
+          className="dashboard-summary-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -314,6 +322,7 @@ const App = () => {
         </div>
 
         <div
+          className="dashboard-summary-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -339,6 +348,7 @@ const App = () => {
 
       {/* Charts */}
       <div
+        className="dashboard-charts-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
@@ -348,6 +358,7 @@ const App = () => {
       >
         {/* Line Chart */}
         <div
+          className="dashboard-chart-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -389,6 +400,7 @@ const App = () => {
 
         {/* Pie Chart */}
         <div
+          className="dashboard-chart-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -422,6 +434,7 @@ const App = () => {
 
         {/* NH3 Line Chart */}
         <div
+          className="dashboard-chart-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -459,6 +472,7 @@ const App = () => {
 
         {/* VOC Line Chart */}
         <div
+          className="dashboard-chart-card"
           style={{
             backgroundColor: "white",
             padding: "20px",
@@ -497,6 +511,7 @@ const App = () => {
 
       {/* Data Table */}
       <div
+        className="dashboard-table-card"
         style={{
           backgroundColor: "white",
           padding: "20px",
@@ -505,8 +520,11 @@ const App = () => {
         }}
       >
         <h3 style={{ margin: "0 0 20px 0" }}>Recent Readings</h3>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="dashboard-table-scroll" style={{ overflowX: "auto" }}>
+          <table
+            className="dashboard-table"
+            style={{ width: "100%", borderCollapse: "collapse" }}
+          >
             <thead>
               <tr style={{ backgroundColor: COLORS.background }}>
                 <th
