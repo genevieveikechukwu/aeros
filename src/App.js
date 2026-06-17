@@ -224,21 +224,22 @@ const App = () => {
           <div
             className="dashboard-sensor-badge"
             style={{
-              padding: "10px 20px",
-              borderRadius: "20px",
+              padding: "10px",
+
               backgroundColor: sensorActive ? "#E8F5E9" : "#FFF3E0",
               color: sensorActive ? "#2E7D32" : "#E65100",
-              border: `2px solid ${sensorActive ? "#81C784" : "#FFB74D"}`,
               fontWeight: "bold",
               display: "flex",
+              width: "fit-content",
               alignItems: "center",
-              gap: "8px",
+              gap: "2px",
+              alignContent: "center",
             }}
           >
-            <span style={{ fontSize: "18px" }}>
-              {sensorActive ? "🟢" : "🟡"}
+            <span>{sensorActive ? "🟢" : "🟡"}</span>
+            <span style={{ fontSize: "12px" }}>
+              {sensorActive ? "Sensors Active" : "Sensors Inactive"}
             </span>
-            {sensorActive ? "Sensors Active" : "Sensors Inactive"}
           </div>
         </div>
       </div>

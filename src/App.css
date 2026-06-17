@@ -1,62 +1,160 @@
-.dashboard-shell {
+html,
+body,
+#__next {
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.dashboard-shell {
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.dashboard-shell,
+.dashboard-header,
+.dashboard-summary-card,
+.dashboard-chart-card,
+.dashboard-table-card {
+  width: 100%;
+  max-width: 100%;
 }
 
 .dashboard-summary-grid,
 .dashboard-charts-grid {
   width: 100%;
+  max-width: 100%;
+}
+
+.dashboard-header-content > div:first-child,
+.dashboard-header-content {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+
+.dashboard-sensor-badge {
+  border-radius: 5px !important;
+}
+
+.dashboard-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .dashboard-table {
-  min-width: 760px;
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-table th:nth-child(1),
+.dashboard-table td:nth-child(1) {
+  width: 14%;
+}
+
+.dashboard-table th:nth-child(2),
+.dashboard-table td:nth-child(2) {
+  width: 15%;
+}
+
+.dashboard-table th:nth-child(3),
+.dashboard-table td:nth-child(3),
+.dashboard-table th:nth-child(4),
+.dashboard-table td:nth-child(4),
+.dashboard-table th:nth-child(5),
+.dashboard-table td:nth-child(5),
+.dashboard-table th:nth-child(6),
+.dashboard-table td:nth-child(6) {
+  width: 10%;
+}
+
+.dashboard-table th:nth-child(7),
+.dashboard-table td:nth-child(7) {
+  width: 13%;
+}
+
+.dashboard-table th:nth-child(8),
+.dashboard-table td:nth-child(8) {
+  width: 14%;
 }
 
 @media (max-width: 1024px) {
+  .dashboard-shell {
+    padding: 2% !important;
+  }
+
+  .dashboard-summary-grid,
   .dashboard-charts-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+    gap: 2% !important;
   }
 }
 
 @media (max-width: 768px) {
   .dashboard-shell {
-    padding: 12px !important;
+    padding: 3% !important;
   }
 
   .dashboard-header,
   .dashboard-summary-card,
   .dashboard-chart-card,
   .dashboard-table-card {
-    padding: 14px !important;
+    padding: 3% !important;
   }
 
   .dashboard-header-content {
     flex-direction: column !important;
     align-items: flex-start !important;
+    gap: 3% !important;
   }
 
   .dashboard-header h1 {
-    font-size: 1.35rem;
+    font-size: 1.2rem;
     line-height: 1.2;
+    margin: 0;
+  }
+
+  .dashboard-header p {
+    margin: 2% 0 0 0 !important;
   }
 
   .dashboard-sensor-badge {
-    width: 100%;
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+    height: 42px;
+    padding: 0 4% !important;
     justify-content: center;
+    align-self: flex-start;
+    flex-shrink: 0;
   }
 
   .dashboard-summary-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    gap: 3% !important;
   }
 
   .dashboard-charts-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    gap: 3% !important;
   }
 
   .dashboard-chart-card h3,
   .dashboard-table-card h3 {
-    margin-bottom: 12px !important;
+    margin: 0 0 3% 0 !important;
     font-size: 1rem;
   }
 
@@ -64,39 +162,52 @@
     min-width: 0;
   }
 
-  .dashboard-table {
-    min-width: 680px;
-  }
-
   .dashboard-table th,
   .dashboard-table td {
-    padding: 10px !important;
+    padding: 1.5% !important;
     font-size: 0.875rem;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-shell {
-    padding: 10px !important;
+    padding: 3% !important;
   }
 
   .dashboard-header,
   .dashboard-summary-card,
   .dashboard-chart-card,
   .dashboard-table-card {
-    padding: 12px !important;
+    padding: 3% !important;
     border-radius: 6px;
   }
 
   .dashboard-header h1 {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+  }
+
+  .dashboard-header p,
+  .dashboard-summary-card h3,
+  .dashboard-chart-card h3,
+  .dashboard-table-card h3 {
+    margin-bottom: 2% !important;
   }
 
   .dashboard-summary-card p {
-    font-size: 24px !important;
+    font-size: 22px !important;
   }
 
-  .dashboard-table {
-    min-width: 620px;
+  .dashboard-sensor-badge {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+    height: 42px;
+    border-radius: 5px !important;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    font-size: 0.8rem;
+    padding: 1.5% !important;
   }
 }
